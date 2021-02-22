@@ -2,52 +2,83 @@
 // jQuery
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 var resizeId;
-var marqueeInitialized = 0;
 
 $(document).ready(function($) {
     "use strict";
 
+    $(".ts-bubble-border").each(function () {
+        var $this = $(this);
+        $this.prepend("<i></i><i></i><i></i><i></i><i></i>");
+    });
+
+    $("#ts-content .ts-bubble-border, #ts-footer .ts-bubble-border").each(function () {
+        var $this = $(this);
+        $this.isInViewport(function(status) {
+            if (status === "entered") {
+                $this.addClass("in");
+            }
+            else if (status === "leaved") {
+                $this.removeClass("in");
+            }
+        });
+    });
+
+    $(".ts-promo-numbers").each(function () {
+        $(this).isInViewport(function(status) {
+            if (status === "entered") {
+                for( var i=0; i < document.querySelectorAll(".odometer").length; i++ ){
+                    var el = document.querySelectorAll('.odometer')[i];
+                    el.innerHTML = el.getAttribute("data-odometer-final");
+                }
+            }
+        });
+    });
+
     $("body").imagesLoaded( function() {
         $("body").addClass("loading-done");
-        var $animatedWaves = $(".ts-animated-waves");
-        $animatedWaves.css("transform", "translateX( calc( -100% + " + ($(window).width()+5)  + "px )" );
-        $animatedWaves.on("transitionend webkitTransitionEnd oTransitionEnd", function(){
-            $(this).toggleClass("repeat");
+        $("#ts-hero .ts-bubble-border").each(function(){
+            var $this = $(this);
+            var $active = $(this).find(".active");
+
+            $this.width( $this.find(".active").outerWidth() );
+            $this.height( $this.find(".active").outerHeight() );
+
+            setTimeout(function(){
+                $("#ts-hero .ts-bubble-border").addClass("in");
+                setInterval(function(){
+                    $this.find(".active").addClass("out");
+                    setTimeout(function(){
+                        $this.find(".active").removeClass("active out");
+                        if( $active.next().length ) {
+                            $active.next().addClass("active");
+                            $active = $active.next();
+                        }
+                        else {
+                            $active = $this.find(".ts-title-rotate span:first");
+                            $active.addClass("active");
+                        }
+                        $this.width( $this.find(".active").outerWidth() );
+                        $this.height( $this.find(".active").outerHeight() );
+
+                    }, 800);
+                }, 3000);
+            }, 500);
+
+        });
+        $("[data-animate]").scrolla({
+            mobile: true
         });
     });
 
-	$(".navbar-nav .nav-link").on("click", function(){
-		$(".navbar-collapse").collapse("hide");
+
+
+    $(".ts-title-rotate span").each(function(){
+        //alert( $(this).width() );
+    });
+
+	$('.navbar-nav .nav-link').on('click', function(){
+		$('.navbar-collapse').collapse('hide');
 	});
-
-	$(".ts-open-side-panel").on("click", function(){
-	   $("body").toggleClass("ts-side-panel-active");
-    });
-
-    $(".ts-close-side-panel").on("click", function(){
-        $("body").removeClass("ts-side-panel-active");
-    });
-
-    $(document).keydown(function(e) {
-        if( !$("body").hasClass("mfp-zoom-out-cur") ){
-            switch(e.which) {
-                case 27: // ESC
-                    $(".ts-close-side-panel").trigger("click");
-                    break;
-            }
-        }
-    });
-
-    $(".ts-shapes-canvas .ts-background-image").each(function(){
-        var $this = $(this);
-        $this.css({
-            "animation-duration": (Math.floor(Math.random() * 10)+5) + "s"
-        });
-        $this.wrap('<div class="ts-shape"></div>');
-        if( $this.attr('data-bg-opacity') ){
-            $this.css("opacity", $this.attr('data-bg-opacity') );
-        }
-    });
 
     $(".ts-img-into-bg").each(function() {
         $(this).css("background-image", "url("+ $(this).find("img").attr("src") +")" );
@@ -128,6 +159,38 @@ $(document).ready(function($) {
         }
     });
 
+//  Parallax Background Image
+
+    $("[data-bg-parallax='scroll']").each(function() {
+        var speed = $(this).attr("data-bg-parallax-speed");
+        var $this = $(this);
+        var isVisible;
+        var backgroundPosition;
+
+        $this.isInViewport(function(status) {
+            if (status === "entered") {
+                isVisible = 1;
+                var position;
+
+                $(window).scroll(function () {
+                    if( isVisible === 1 ){
+                        position = $(window).scrollTop() - $this.offset().top;
+                        backgroundPosition = (100 - (Math.abs((-$(window).height()) - position) / ($(window).height()+$this.height()))*100);
+                        if( $this.find(".ts-parallax-element").hasClass("ts-background-image") ){
+                            $this.find(".ts-background-image.ts-parallax-element").css("background-position-y", (position/speed) + "px");
+                        }
+                        else {
+                            $this.find(".ts-parallax-element").css("transform", "translateY(" +(position/speed)+ "px)");
+                        }
+                    }
+                });
+            }
+            if (status === "leaved"){
+                isVisible = 0;
+            }
+        });
+    });
+
     $(".ts-labels-inside-input input, .ts-labels-inside-input textarea").focusin(function() {
         $(this).parent().find("label").addClass("focused");
         })
@@ -143,127 +206,11 @@ $(document).ready(function($) {
 
     // Owl Carousel
 
-    var $owlCarousel = $(".owl-carousel");
-
-    if( $owlCarousel.length ){
-        $owlCarousel.each(function() {
-
-            var items = parseInt( $(this).attr("data-owl-items"), 10);
-            if( !items ) items = 1;
-
-            var nav = parseInt( $(this).attr("data-owl-nav"), 2);
-            if( !nav ) nav = 0;
-
-            var dots = parseInt( $(this).attr("data-owl-dots"), 2);
-            if( !dots ) dots = 0;
-
-            var center = parseInt( $(this).attr("data-owl-center"), 2);
-            if( !center ) center = 0;
-
-            var loop = parseInt( $(this).attr("data-owl-loop"), 2);
-            if( !loop ) loop = 0;
-
-            var margin = parseInt( $(this).attr("data-owl-margin"), 2);
-            if( !margin ) margin = 0;
-
-            var autoWidth = parseInt( $(this).attr("data-owl-auto-width"), 2);
-            if( !autoWidth ) autoWidth = 0;
-
-            var navContainer = $(this).attr("data-owl-nav-container");
-            if( !navContainer ) navContainer = 0;
-
-            var autoplay = parseInt( $(this).attr("data-owl-autoplay"), 2);
-            if( !autoplay ) autoplay = 0;
-
-            var autoplayTimeOut = parseInt( $(this).attr("data-owl-autoplay-timeout"), 10);
-            if( !autoplayTimeOut ) autoplayTimeOut = 5000;
-
-            var autoHeight = parseInt( $(this).attr("data-owl-auto-height"), 2);
-            if( !autoHeight ) autoHeight = 0;
-
-            var fadeOut = $(this).attr("data-owl-fadeout");
-            if( !fadeOut ) fadeOut = 0;
-            else fadeOut = "fadeOut";
-
-            if( $("body").hasClass("rtl") ) var rtl = true;
-            else rtl = false;
-
-            if( items === 1 ){
-                $(this).owlCarousel({
-                    navContainer: navContainer,
-                    animateOut: fadeOut,
-                    autoplayTimeout: autoplayTimeOut,
-                    autoplay: 1,
-                    autoheight: autoHeight,
-                    center: center,
-                    loop: loop,
-                    margin: margin,
-                    autoWidth: autoWidth,
-                    items: 1,
-                    nav: nav,
-                    dots: dots,
-                    rtl: rtl,
-                    navText: []
-                });
-            }
-            else {
-                $(this).owlCarousel({
-                    navContainer: navContainer,
-                    animateOut: fadeOut,
-                    autoplayTimeout: autoplayTimeOut,
-                    autoplay: autoplay,
-                    autoHeight: autoHeight,
-                    center: center,
-                    loop: loop,
-                    margin: margin,
-                    autoWidth: autoWidth,
-                    items: 1,
-                    nav: nav,
-                    dots: dots,
-                    rtl: rtl,
-                    navText: [],
-                    responsive: {
-                        1199: {
-                            items: items
-                        },
-                        992: {
-                            items: 3
-                        },
-                        768: {
-                            items: 2
-                        },
-                        0: {
-                            items: 1
-                        }
-                    }
-                });
-            }
-
-            if( $(this).find(".owl-item").length === 1 ){
-                $(this).find(".owl-nav").css( { "opacity": 0,"pointer-events": "none"} );
-            }
-
-        });
-    }
-
-    $(".ts-count-down").each(function(){
-        var date = $(this).attr("data-date");
-        $(this).countdown({
-            date: date,
-            render: function(data) {
-                var el = $(this.el);
-                el.empty()
-                .append("<div><span class='ts-cc-number'>" + this.leadingZeros(data.days, 2) + " </span><span class='ts-cc-description'>Days</span></div>")
-                .append("<div><span class='ts-cc-number'>" + this.leadingZeros(data.hours, 2) + " </span><span class='ts-cc-description'>Hours</span></div>")
-                .append("<div><span class='ts-cc-number'>" + this.leadingZeros(data.min, 2) + " </span><span class='ts-cc-description'>Minutes</span></div>")
-                .append("<div><span class='ts-cc-number'>" + this.leadingZeros(data.sec, 2) + " </span><span class='ts-cc-description'>Seconds</span></div>");
-            }
-        });
-    });
+    initOwl();
 
     // Magnific Popup
 
-    var $popupImage = $(".popup-popup");
+    var $popupImage = $(".popup-image");
 
     if ( $popupImage.length > 0 ) {
         $popupImage.magnificPopup({
@@ -342,11 +289,35 @@ $(document).ready(function($) {
         $(this).validate();
     });
 
+    $(".progress").each(function(){
+        var $this = $(this);
+        $this.find(".ts-progress-value").text( $this.attr("data-progress-width") );
+        $this.isInViewport(function(status) {
+            if (status === "entered") {
+                $this.find(".progress-bar").width( $this.attr("data-progress-width") );
+                $this.find(".ts-progress-value").css("left", $this.attr("data-progress-width"));
+            }
+        });
+    });
+
+
+
 // On RESIZE actions
 
     $(window).on("resize", function(){
         clearTimeout(resizeId);
         resizeId = setTimeout(doneResizing, 250);
+    });
+
+// On SCROLL actions
+
+    $(window).on("scroll", function(){
+        if ( $(window).scrollTop() >= $(window).height() ) {
+            $(".navbar").addClass("in");
+        }
+        else {
+            $(".navbar").removeClass("in");
+        }
     });
 
 });
@@ -358,7 +329,53 @@ $(document).ready(function($) {
 // Do after resize
 
 function doneResizing(){
+    //heroHeight();
     $(".owl-carousel").trigger('next.owl.carousel');
+}
+
+// Set Hero height
+
+function heroHeight(){
+    $(".ts-full-screen").height( $(window).height() );
+}
+
+// Smooth Scroll
+
+$(".ts-scroll").on("click", function(event) {
+    if (
+        location.pathname.replace(/^\//, '') === this.pathname.replace(/^\//, '')
+        &&
+        location.hostname === this.hostname
+    ) {
+        var target = $(this.hash);
+        target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').animate({
+                scrollTop: target.offset().top
+            }, 1000, function() {
+                var $target = $(target);
+                $target.focus();
+                if ($target.is(":focus")) {
+                    return false;
+                } else {
+                    $target.attr('tabindex','-1');
+                    $target.focus();
+                }
+            });
+        }
+    }
+});
+
+
+
+// Return scrollbar width
+
+function getScrollBarWidth () {
+    var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body'),
+        widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
+    $outer.remove();
+    return 100 - widthWithScroll;
 }
 
 function simpleMap(latitude, longitude, markerImage, mapStyle, mapElement, markerDrag){
@@ -381,4 +398,109 @@ function simpleMap(latitude, longitude, markerImage, mapStyle, mapElement, marke
         icon: markerImage,
         draggable: markerDrag
     });
+}
+
+function initOwl(){
+    var $owlCarousel = $(".owl-carousel");
+
+    if( $owlCarousel.length ){
+        $owlCarousel.each(function() {
+
+            var items = parseInt( $(this).attr("data-owl-items"), 10);
+            if( !items ) items = 1;
+
+            var nav = parseInt( $(this).attr("data-owl-nav"), 2);
+            if( !nav ) nav = 0;
+
+            var dots = parseInt( $(this).attr("data-owl-dots"), 2);
+            if( !dots ) dots = 0;
+
+            var center = parseInt( $(this).attr("data-owl-center"), 2);
+            if( !center ) center = 0;
+
+            var loop = parseInt( $(this).attr("data-owl-loop"), 2);
+            if( !loop ) loop = 0;
+
+            var margin = parseInt( $(this).attr("data-owl-margin"), 2);
+            if( !margin ) margin = 0;
+
+            var autoWidth = parseInt( $(this).attr("data-owl-auto-width"), 2);
+            if( !autoWidth ) autoWidth = 0;
+
+            var navContainer = $(this).attr("data-owl-nav-container");
+            if( !navContainer ) navContainer = 0;
+
+            var autoplay = parseInt( $(this).attr("data-owl-autoplay"), 2);
+            if( !autoplay ) autoplay = 0;
+
+            var autoplayTimeOut = parseInt( $(this).attr("data-owl-autoplay-timeout"), 10);
+            if( !autoplayTimeOut ) autoplayTimeOut = 5000;
+
+            var autoHeight = parseInt( $(this).attr("data-owl-auto-height"), 2);
+            if( !autoHeight ) autoHeight = 0;
+
+            var fadeOut = $(this).attr("data-owl-fadeout");
+            if( !fadeOut ) fadeOut = 0;
+            else fadeOut = "fadeOut";
+
+            if( $("body").hasClass("rtl") ) var rtl = true;
+            else rtl = false;
+
+            if( items === 1 ){
+                $(this).owlCarousel({
+                    navContainer: navContainer,
+                    animateOut: fadeOut,
+                    autoplayTimeout: autoplayTimeOut,
+                    autoplay: 1,
+                    autoHeight: autoHeight,
+                    center: center,
+                    loop: loop,
+                    margin: margin,
+                    autoWidth: autoWidth,
+                    items: 1,
+                    nav: nav,
+                    dots: dots,
+                    rtl: rtl,
+                    navText: []
+                });
+            }
+            else {
+                $(this).owlCarousel({
+                    navContainer: navContainer,
+                    animateOut: fadeOut,
+                    autoplayTimeout: autoplayTimeOut,
+                    autoplay: autoplay,
+                    autoHeight: autoHeight,
+                    center: center,
+                    loop: loop,
+                    margin: margin,
+                    autoWidth: autoWidth,
+                    items: 1,
+                    nav: nav,
+                    dots: dots,
+                    rtl: rtl,
+                    navText: [],
+                    responsive: {
+                        1199: {
+                            items: items
+                        },
+                        992: {
+                            items: 3
+                        },
+                        768: {
+                            items: 2
+                        },
+                        0: {
+                            items: 1
+                        }
+                    }
+                });
+            }
+
+            if( $(this).find(".owl-item").length === 1 ){
+                $(this).find(".owl-nav").css( { "opacity": 0,"pointer-events": "none"} );
+            }
+
+        });
+    }
 }

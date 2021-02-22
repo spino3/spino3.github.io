@@ -1,6 +1,37 @@
 .ts-item {
   height: 100%;
-  padding-bottom: 30px;
+  padding-bottom: 64px;
+
+  &:hover {
+    .icon, h4, p {
+      transform: translateY(-10px);
+    }
+    .ts-link-arrow-effect {
+      color: var(--color-white);
+      &:before {
+        animation: ts-link-arrow-effect-animation-in;
+        animation-fill-mode: forwards;
+        animation-duration: .4s;
+        animation-timing-function: cubic-bezier(.6,.01,0,1);
+      }
+      span {
+        transform: translateX(0%);
+      }
+    }
+  }
+
+  .icon, h4, p {
+    transition: var(--tr);
+    transform: translateY(0px);
+  }
+
+  h4 {
+    transition-delay: .05s;
+  }
+  p {
+    transition-delay: .1s;
+  }
+
 }
 
 .ts-item-content {
@@ -10,22 +41,24 @@
 }
 
 .ts-item-header {
-  margin-bottom: 25px;
+  margin-bottom: 24px;
   position: relative;
   .icon {
+    position: relative;
+    display: inline-block;
     .step {
       background-color: var(--color-primary);
-      bottom: 0;
+      top: 0;
       box-shadow: var(--bs-md);
       border-radius: var(--br-circle);
-      color: var(--color-black);
+      color: var(--color-white);
       font-weight: 600;
-      line-height: 30px;
-      left: 0;
-      height: 30px;
+      line-height: 32px;
+      right: 0;
+      height: 32px;
       position: absolute;
       text-align: center;
-      width: 30px;
+      width: 32px;
     }
   }
 }
@@ -35,5 +68,6 @@
 }
 
 .ts-item-footer {
-
+  padding-top: 16px;
+  padding-bottom: 16px;
 }

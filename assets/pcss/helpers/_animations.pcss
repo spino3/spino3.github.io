@@ -4,7 +4,8 @@
 [data-animate] {
   opacity: 0;
   animation-fill-mode: forwards;
-  animation-duration: 1s;
+  animation-duration: .6s;
+  animation-timing-function: ease;
 }
 
 /* Fade In Up */
@@ -97,6 +98,24 @@
   animation-name: ts-zoomIn;
 }
 
+/* Zoom Out In */
+
+@keyframes ts-zoomOutIn {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1)
+  }
+}
+
+.ts-zoomOutIn {
+  animation-name: ts-zoomOutIn;
+}
+
 /* Zoom In Short */
 
 @keyframes ts-zoomInShort {
@@ -113,49 +132,4 @@
 
 .ts-zoomInShort {
   animation-name: ts-zoomInShort;
-}
-
-/****** Animate Shapes ******/
-
-.ts-animate {
-  animation-iteration-count: infinite;
-  animation-duration: 5s;
-}
-
-/* Bounce */
-
-@keyframes ts-bounce {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(40px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-.ts-bounce {
-  animation-name: ts-bounce;
-  animation-timing-function: ease-in-out;
-}
-
-/* Scale */
-
-@keyframes ts-scale {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.ts-scale {
-  animation-name: ts-scale;
-  animation-timing-function: ease-in-out;
 }

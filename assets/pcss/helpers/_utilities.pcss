@@ -1,11 +1,15 @@
 /*-------------------------------------------
   -- Utilities
 -------------------------------------------*/
+.ts-element {
+  position: relative;
+}
+
 /* Social Icons */
 .ts-social-icons {
   font-size: 120%;
   a {
-    padding: 4px 8px;
+    padding: 2px 4px;
     color: var(--color-grey);
   }
 }
@@ -33,4 +37,17 @@
 /* Flip Y */
 .ts-flip-y {
   transform: scaleX(-1);
+}
+
+.ts-has-talk-arrow {
+  position: relative;
+  &:after {
+    border-style: solid;
+    border-width: 10px 10px 0 0;
+    border-color: var(--color-primary) transparent transparent transparent;
+    bottom: -10px;
+    content: "";
+    left: 16px;
+    position: absolute;
+  }
 }
